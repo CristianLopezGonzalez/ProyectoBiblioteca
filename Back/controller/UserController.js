@@ -39,63 +39,6 @@ export class UserController {
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    */
-  static async register(req, res) {
-    try {
-      const { username, email, password } = req.body;
-
-      if (!username || !email || !password) {
-        return res
-          .status(400)
-          .json({ error: "Todos los campos son requeridos" });
-      }
-
-      // Verificar si el email ya existe
-      const existingUser = await UserModel.getByEmail({email});
-      if (existingUser) {
-        return res.status(409).json({ 
-          error: "El email ya está registrado" 
-        });
-      }
-
-      const rounds = 10;
-      const hashPassword = await bcrypt.hash(password, rounds);
-
-      const result = await UserModel.create({
-        username,
-        email,
-        password: hashPassword,
-      });
-
-      // Generar JWT
-      const token = jwt.sign(
-        {
-          id: result.insertId,
-          email: email,
-          username: username,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
-      );
-
-      res.status(201).json({
-        success: true,
-        message: "Usuario registrado exitosamente",
-        token,
-        user: {
-          id: result.insertId,
-          username,
-          email
-        }
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-
-  /**
-   * @param {import('express').Request} req
-   * @param {import('express').Response} res
-   */
   static async delete(req, res) {
     try {
       const { id } = req.params;
@@ -167,6 +110,8 @@ export class UserController {
     }
   }
 
+
+  // Login y register
   /**
    * @param {import('express').Request} req
    * @param {import('express').Response} res
@@ -219,6 +164,63 @@ export class UserController {
           username: user.username,
           email: user.email,
         },
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+   /**
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   */
+  static async register(req, res) {
+    try {
+      const { username, email, password } = req.body;
+
+      if (!username || !email || !password) {
+        return res
+          .status(400)
+          .json({ error: "Todos los campos son requeridos" });
+      }
+
+      // Verificar si el email ya existe
+      const existingUser = await UserModel.getByEmail({email});
+      if (existingUser) {
+        return res.status(409).json({ 
+          error: "El email ya está registrado" 
+        });
+      }
+
+      const rounds = 10;
+      const hashPassword = await bcrypt.hash(password, rounds);
+
+      const result = await UserModel.create({
+        username,
+        email,
+        password: hashPassword,
+      });
+
+      // Generar JWT
+      const token = jwt.sign(
+        {
+          id: result.insertId,
+          email: email,
+          username: username,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+      );
+
+      res.status(201).json({
+        success: true,
+        message: "Usuario registrado exitosamente",
+        token,
+        user: {
+          id: result.insertId,
+          username,
+          email
+        }
       });
     } catch (error) {
       res.status(500).json({ error: error.message });

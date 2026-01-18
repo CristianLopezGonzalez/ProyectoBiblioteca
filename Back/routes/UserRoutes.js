@@ -1,6 +1,7 @@
 import express from 'express';
 import { UserController } from '../controller/UserController.js';
 import { verifyToken } from '../middlewares/authMiddleware.js';
+
 const router = express.Router();
 
 // Rutas publicas
